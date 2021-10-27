@@ -1,4 +1,4 @@
-import { data } from "./mock.js";
+// import { data } from "./mock.js";
 
 function convertToSlug(Text) {
   return Text.toLowerCase()
@@ -19,8 +19,8 @@ class SearchAPI {
       ".search-results-inner"
     );
     this.resultCard = this.$dd.querySelector(".result-card").cloneNode(true);
-
-    this.resultData = data;
+    this.$seeMore = document.querySelector("[search-api='see-more']");
+    this.resultData = null;
     this.init();
   }
 
@@ -29,10 +29,11 @@ class SearchAPI {
   }
 
   activateEvents() {
-    this.$inputEle.addEventListener("input", () => {
+    this.$inputEle.addEventListener("input", async () => {
       if (this.$inputEle.value.length >= 2) {
         this.$dd.style.display = "block";
-        this.addResultsDOM();
+        await this.fetchData(this.$inputEle.value);
+        // this.addResultsDOM();
       } else {
         this.$dd.style.display = "hide";
       }
@@ -45,6 +46,26 @@ class SearchAPI {
         this.$dd.style.display = "none";
       }
     });
+
+    this.$seeMore.addEventListener("click", () => {
+      this.$seeMore.href = `${this.$seeMore.href}?searchTerm=${this.$inputEle.value}`;
+    });
+  }
+
+  async fetchData(inputText) {
+    try {
+      const resData = await fetch(
+        `https://www.slintel.com/api/global/autosuggestions?searchTerm=${inputText}`
+      );
+      const data = await resData.json();
+      if (data) {
+        this.resultData = data.data;
+        this.addResultsDOM();
+      }
+      return data;
+    } catch (error) {
+      console.log({ error });
+    }
   }
 
   addResultsDOM() {
@@ -64,7 +85,6 @@ class SearchAPI {
 
   updateResults(dataArr, parentEle, category) {
     if (!dataArr || !parentEle) return;
-
     const routeUrl = `https://www.slintel.com`;
 
     dataArr.forEach((obj) => {
