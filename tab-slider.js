@@ -32,10 +32,18 @@ class TabSlider {
   }
 
   addTabHeights() {
-    this.$sliderTabs.find('[slide="content-block"]').each(function () {
-      $(this).attr("tab-height", $(this).height());
-      $(this).css("height", "0px");
-    });
+    [...this.$sliderTabs.find('[slide="content-block"]')].forEach(tabItem => {
+      let elHeight = 0;
+      [...tabItem.children].forEach(chNd => {
+        if (chNd.style.display != "none") {
+          elHeight = elHeight + chNd.getBoundingClientRect().height;
+        }
+        tabItem.setAttribute("tab-height", elHeight)
+      })
+    })
+    // this.$sliderTabs.find('[slide="content-block"]').each(function () {
+    //   $(this).attr("tab-height", $(this).height());
+    // });
   }
 
   onImagesLoaded(event) {
